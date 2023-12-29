@@ -1,0 +1,91 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Assets\Cards\0.png" />
+      <None Remove="Assets\Cards\1.png" />
+      <None Remove="Assets\Cards\10.png" />
+      <None Remove="Assets\Cards\11.png" />
+      <None Remove="Assets\Cards\12.png" />
+      <None Remove="Assets\Cards\13.png" />
+      <None Remove="Assets\Cards\14.png" />
+      <None Remove="Assets\Cards\15.png" />
+      <None Remove="Assets\Cards\16.png" />
+      <None Remove="Assets\Cards\17.png" />
+      <None Remove="Assets\Cards\18.png" />
+      <None Remove="Assets\Cards\19.png" />
+      <None Remove="Assets\Cards\2.png" />
+      <None Remove="Assets\Cards\20.png" />
+      <None Remove="Assets\Cards\21.png" />
+      <None Remove="Assets\Cards\22.png" />
+      <None Remove="Assets\Cards\23.png" />
+      <None Remove="Assets\Cards\24.png" />
+      <None Remove="Assets\Cards\25.png" />
+      <None Remove="Assets\Cards\26.png" />
+      <None Remove="Assets\Cards\27.png" />
+      <None Remove="Assets\Cards\28.png" />
+      <None Remove="Assets\Cards\29.png" />
+      <None Remove="Assets\Cards\3.png" />
+      <None Remove="Assets\Cards\30.png" />
+      <None Remove="Assets\Cards\31.png" />
+      <None Remove="Assets\Cards\32.png" />
+      <None Remove="Assets\Cards\33.png" />
+      <None Remove="Assets\Cards\34.png" />
+      <None Remove="Assets\Cards\35.png" />
+      <None Remove="Assets\Cards\36.png" />
+      <None Remove="Assets\Cards\37.png" />
+      <None Remove="Assets\Cards\38.png" />
+      <None Remove="Assets\Cards\39.png" />
+      <None Remove="Assets\Cards\4.png" />
+      <None Remove="Assets\Cards\40.png" />
+      <None Remove="Assets\Cards\41.png" />
+      <None Remove="Assets\Cards\42.png" />
+      <None Remove="Assets\Cards\43.png" />
+      <None Remove="Assets\Cards\44.png" />
+      <None Remove="Assets\Cards\45.png" />
+      <None Remove="Assets\Cards\46.png" />
+      <None Remove="Assets\Cards\47.png" />
+      <None Remove="Assets\Cards\48.png" />
+      <None Remove="Assets\Cards\49.png" />
+      <None Remove="Assets\Cards\5.png" />
+      <None Remove="Assets\Cards\50.png" />
+      <None Remove="Assets\Cards\51.png" />
+      <None Remove="Assets\Cards\52.png" />
+      <None Remove="Assets\Cards\6.png" />
+      <None Remove="Assets\Cards\7.png" />
+      <None Remove="Assets\Cards\8.png" />
+      <None Remove="Assets\Cards\9.png" />
+      <None Remove="Assets\GameBack.jpg" />
+      <None Remove="Assets\GameBackground.jpg" />
+      <None Remove="Assets\gameicon.ico" />
+      <None Remove="Assets\startup-background.jpg" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.0.5" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.0.5" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.5" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.5" />
+        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.5" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.5" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <ProjectReference Include="..\SunGame_Models\SunGame_Models.csproj" />
+      <ProjectReference Include="..\JProtocol\JProtocol.csproj" />
+    </ItemGroup>
+</Project>
