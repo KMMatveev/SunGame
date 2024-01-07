@@ -1,0 +1,209 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:SunGame.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="SunGame.Views.MainWindow"
+        x:DataType="viewModels:MainWindowViewModel"
+		Icon="/Assets/gameicon.ico"
+        Title="SunGame">
+
+	<Window.Styles>
+		<Style Selector="Button.OnBackgroundImage">
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="Margin" Value="20" />
+			<Setter Property="Background" Value="GhostWhite" />
+			<Setter Property="Foreground" Value="Black" />
+		</Style>
+
+		<Style Selector="TextBlock.TextOnCard">
+			<Setter Property="Foreground" Value="White" />
+			<Setter Property="FontSize" Value="10" />
+			<Setter Property="VerticalAlignment" Value="Top" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="Margin" Value="0, 10, 0, 30 " />
+		</Style>
+
+		<Style Selector="TextBlock.TextOnLittleCard">
+			<Setter Property="Foreground" Value="White" />
+			<Setter Property="FontSize" Value="9" />
+			<Setter Property="VerticalAlignment" Value="Top" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="TextWrapping" Value="WrapWithOverflow"></Setter>
+		</Style>
+
+		<Style Selector="TextBlock.NumberTypeOnCard">
+			<Setter Property="Foreground" Value="White" />
+			<Setter Property="FontSize" Value="8" />
+			<Setter Property="VerticalAlignment" Value="Bottom" />
+			<Setter Property="HorizontalAlignment" Value="Left" />
+			<Setter Property="Margin" Value="3,50,5,5" />
+		</Style>
+		<Style Selector="Button.Card">
+			<Setter Property="Background" Value="Firebrick" />
+			<Setter Property="CornerRadius" Value="3" />
+			<Setter Property="Height" Value="120" />
+			<Setter Property="Width" Value="80" />
+		</Style>
+	</Window.Styles>
+
+	<Window.Background>
+		<ImageBrush Source="/../Assets/startup-background.jpg" Stretch="Fill" />
+	</Window.Background>
+
+    <Grid>
+		<Grid x:Name="MainMenuPage" IsVisible="True">
+			<StackPanel VerticalAlignment="Center" 
+                       HorizontalAlignment="Center">
+				<Button x:Name="StartButton"
+                        Content="Начать"
+                        Classes="OnBackgroundImage"
+                        Click="StartButton_OnClick" />
+				<Button x:Name="ExitButton"
+                        Content="Выйти"
+                        Classes="OnBackgroundImage"
+                        Click="CloseWindow_OnClick" />
+			</StackPanel>
+		</Grid>
+
+        <Border CornerRadius="20" x:Name="NickInput" IsVisible="False" HorizontalAlignment="Center"
+                VerticalAlignment="Center" Background="Gray" Width="350">
+            <StackPanel>
+                <TextBlock Margin="20 15" Text="Nickname:" Foreground="White" />
+                <TextBox Watermark="Введите свой никнейм" Margin="10" x:Name="Nickname" Text="{Binding Player.Name}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button
+                        Content="Назад"
+                        HorizontalAlignment="Left"
+                        Click="OpenMainMenu_OnClick"
+                        HotKey="Escape" />
+                    <Button
+                        Content="Подключиться" IsEnabled="{Binding ElementName=Nickname, Path=Text.Length}"
+                        HorizontalAlignment="Right"
+                        Click="PlayerJoin_OnClick"
+                        Command="{Binding ConnectCommand}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Grid RowDefinitions="Auto,17*, Auto" x:Name="GameGrid" IsVisible="False" VerticalAlignment="Stretch">
+            <Grid Grid.Row="0" VerticalAlignment="Top" Background="Gray">
+                <ListBox ItemsSource="{Binding Player.PlayersList}"
+                         x:Name="PlayersListBox"
+                         HorizontalAlignment="Left"
+                         VerticalAlignment="Stretch"
+                         Background="Gray"
+                         MinHeight="45"
+                         Height="{Binding $parent[Grid].Height}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Stretch">
+                                <TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Foreground="White"
+                                           VerticalAlignment="Center" FontSize="16">
+                                </TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+            <Grid Grid.Row="1" ColumnDefinitions="3*,16*" VerticalAlignment="Stretch">
+                <Grid Grid.Column="0" Background="Gray">
+                    <StackPanel>
+                        <TextBlock Foreground="White"> Ваш Ник:</TextBlock>
+                        <TextBlock Text="{Binding Player.Name}"
+                                   FontWeight="Bold" />
+                    </StackPanel>
+                </Grid>
+                <Grid Grid.Column="1">
+                    <Grid ColumnDefinitions="1*,2*,1*" RowDefinitions="1*,2*,1*">
+						<Grid.Background>
+							<ImageBrush Source="../../Assets/GameBackground.jpg" Stretch="Fill" />
+						</Grid.Background>
+						
+						
+                        <Grid>
+                        <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300" />
+                        <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                        <RowDefinition Height="100" />
+                        <RowDefinition Height="600" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Стол -->
+                        <StackPanel Canvas.Left="10" Canvas.Top="0" Orientation="Horizontal">
+                                <TextBlock Text="Ваш ход" Background="Red" FontSize="16" FontWeight="Bold"
+                                           Foreground="White" HorizontalAlignment="Center"
+                                           IsVisible="{Binding Player.Turn}" />
+                                <TextBlock Text="{Binding Player.Name}" IsVisible="{Binding Player.Turn}"
+                                           Foreground="White" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        <Button Grid.Column="0" Grid.Row="1" IsVisible="True"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" IsEnabled="True">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Player.CardsCount}" />
+							<TextBlock Text="{Binding Player.UpperFoolCard.Name}" />
+                            <Image Source="{Binding Player.UpperFoolCard.Name}" Height="240" Width="120">  </Image>
+                        </StackPanel>
+                        </Button>
+
+                        <!-- Список карт -->
+                        <ItemsControl Grid.Column="1" Grid.Row="1" ItemsSource="{Binding Player.UnknownCards}"
+                                        x:Name="UnknownListBox">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" Width="800" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                            <Button Margin="5,5,5,5"
+                                    IsVisible="True" Click="TakeCardClick"
+                                    Command ="{Binding $parent[Grid].((viewModels:MainWindowViewModel)DataContext).TakeCardClickCommand}"
+                                    CommandParameter="{Binding }"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center" IsEnabled="{Binding $parent[Grid].((viewModels:MainWindowViewModel)DataContext).Player.HasntCards}">
+                                <Image Source="../../Assets/Cards/shirt.png" Height="60" Width="30"></Image>
+                            </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        </Grid>
+
+
+
+                    </Grid>
+                </Grid>
+            </Grid>
+            <Grid Grid.Row="2" Background="Gray">
+                <TextBlock Text="{Binding Player.PlayerCardsCount}" />
+                <Button CommandParameter="{Binding Player.UpperCard.Id}"
+                        Command="{Binding $parent[Grid].((viewModels:MainWindowViewModel)DataContext).TakeCardClickCommand}"
+                        IsVisible="{Binding $parent[Grid].((viewModels:MainWindowViewModel)DataContext).Player.HasCards}"
+                        IsEnabled="{Binding $parent[Grid].((viewModels:MainWindowViewModel)DataContext).Player.Turn}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Player.UpperCard.Name}" />
+                        <Image Source="{Binding Player.UpperCard.Name}" Height="90" Width="45">  </Image>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <!--<TextBlock Text="{Binding Name}" />
+                                    <TextBlock Text="{Binding Number}" />-->
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Grid>
+        <Grid IsVisible="{Binding Player.Win}" Background="Black">
+            <TextBlock FontSize="50" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center">Победа</TextBlock>
+        </Grid>
+        <Grid IsVisible="{Binding Player.Lose}" Background="Black">
+            <TextBlock FontSize="50" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center">Поражение</TextBlock>
+        </Grid>
+    </Grid>
+</Window>
