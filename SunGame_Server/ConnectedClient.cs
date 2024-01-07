@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using JProtocol;
 using JProtocol.JPackets;
 using JProtocol.Serializer;
+using SunGame_Models.Cards;
 
 namespace SunGame_Server;
 
@@ -26,7 +27,18 @@ internal sealed class ConnectedClient : INotifyPropertyChanged
         set
         {
             _unknownCards = value;
-            OnPropertyChanged();
+            //OnPropertyChanged();
+        }
+    }
+
+    private FoolCard _upperCard;
+    public FoolCard UpperCard
+    {
+        get => _upperCard;
+        set
+        {
+            _upperCard = value;
+            //OnPropertyChanged();
         }
     }
 
@@ -47,7 +59,7 @@ internal sealed class ConnectedClient : INotifyPropertyChanged
         set
         {
             _cardsOnTable = value;
-            OnPropertyChanged();
+            //OnPropertyChanged();
         }
     }
 
@@ -59,7 +71,6 @@ internal sealed class ConnectedClient : INotifyPropertyChanged
         private set
         {
             _cards = value;
-            OnPropertyChanged();
         }
     }
 
@@ -89,7 +100,7 @@ internal sealed class ConnectedClient : INotifyPropertyChanged
     public bool Turn
     {
         get => _turn;
-        private set
+        set
         {
             _turn = value;
             OnPropertyChanged();
@@ -107,24 +118,41 @@ internal sealed class ConnectedClient : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+    public FoolCard UpperFoolCard
+    {
+        get
+        {
+            return JServer.PlayCards[_cardOnTable];
+        }
+    }
+
+    public bool Connected { get; set; } = false;
 
     public byte ToPlayerId { get; set; } = 10;
     
     public bool IsNeedCard { get; set; }
-
-    public bool IsReady { get; set; }
+    private bool _isReady;
+    public bool IsReady
+    {
+        get => _isReady;
+        set
+        {
+            _isReady = value;
+        }
+    } 
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-    public ConnectedClient(Socket client, byte id)
+    public ConnectedClient(Socket client, byte id,List<byte> unknowns)
     {
         Client = client;
         Id = id;
         Cards = new Stack<byte>();
-
+        UnknownCards = unknowns;
+        IsReady = false;
         Task.Run(ReceivePackets);
         Task.Run(SendPackets);
     }
@@ -133,8 +161,8 @@ internal sealed class ConnectedClient : INotifyPropertyChanged
     {
         while (true)
         {
-            try 
-            { 
+            try
+            {
                 var buff = new byte[1024];
                 Client.Receive(buff);
 
@@ -150,7 +178,7 @@ internal sealed class ConnectedClient : INotifyPropertyChanged
 
                 if (parsed != null!) ProcessIncomingPacket(parsed);
             }
-            catch { Client.Close(); Console.WriteLine("Can't recieve packet, client closed"); break; }
+            catch {  Console.WriteLine("Can't recieve packet, client closed"); }//Client.Close(); break; }
         }
     }
 
@@ -168,14 +196,18 @@ internal sealed class ConnectedClient : INotifyPropertyChanged
                 break;
             case JPacketType.Turn:
                 ProcessEndTurn();
+                Console.WriteLine("EndTurn");
                 break;
             case JPacketType.CardToTable:
                 ProcessGettingCardOnTable(packet);
                 break;
+            case JPacketType.TableDeck:
+                break;
+            case JPacketType.PlayerDeck:
+                break;
             case JPacketType.PlayersList:
                 break;
             case JPacketType.CardToPlayer:
-
                 break;
             case JPacketType.Win:
                 break;
@@ -191,11 +223,23 @@ internal sealed class ConnectedClient : INotifyPropertyChanged
     private void ProcessGettingCardOnTable(JPacket packet)
     {
         var packetCard = JPacketConverter.Deserialize<JPacketCard>(packet);
-        Cards!.Pop();
-        CardsCount = (byte)Cards.Count;
-        if (packetCard.ToPlayerId != 10)
-            ToPlayerId = packetCard.ToPlayerId;
-        CardOnTable = packetCard.CardId;
+        //Cards!.Pop();
+        //CardsCount = (byte)Cards.Count;
+        //if (packetCard.ToPlayerId != 10)
+        //     ToPlayerId = packetCard.ToPlayerId;
+        //CardOnTable = packetCard.CardId;
+        if (packetCard.ToPlayerId == Id) 
+        {
+            Cards.Push(packetCard.CardId);//JServer._cardsDeck.Pop());//packetCard.CardId);
+            IsReady = true;
+        }
+        Console.WriteLine($"Card id ={packetCard.CardId}, from player {packetCard.ToPlayerId}");
+
+        foreach (var client in JServer.ConnectedClients)
+            client.GiveCard(packetCard.CardId);
+
+        Thread.Sleep(1000);
+        _turn = false;
     }
 
     private void ProcessUpdatingProperty(JPacket packet)
@@ -225,7 +269,7 @@ internal sealed class ConnectedClient : INotifyPropertyChanged
     {
         var packetConnection = JPacketConverter.Deserialize<JPacketHandshake>(packet);
         packetConnection.Handshake += 15;
-
+        Connected= true;
         QueuePacketSend(JPacketConverter.Serialize(JPacketType.Connection, packetConnection).ToPacket());
 
         QueuePacketSend(JPacketConverter.Serialize(JPacketType.UpdatedPlayerProperty,
@@ -246,10 +290,10 @@ internal sealed class ConnectedClient : INotifyPropertyChanged
             var encryptedPacket = JProtocolEncryptor.Encrypt(packet);
 
             if (encryptedPacket.Length > 1024)
-                throw new Exception("Max packet size is 1024 bytes.");
+                Console.WriteLine("Max packet size is 1024 bytes.");//throw new Exception("Max packet size is 1024 bytes.");
 
             Client.Send(encryptedPacket);
-
+            //Console.WriteLine($"Sended packet to client with id={Id}");
             Thread.Sleep(100);
         }
     }
@@ -279,10 +323,25 @@ internal sealed class ConnectedClient : INotifyPropertyChanged
 
     public void GiveCard(byte cardId)
     {
-        Cards!.Push(cardId);
-        CardsCount = (byte)Cards.Count;
-        var packerCard = JPacketConverter.Serialize(JPacketType.CardToPlayer, new JPacketCard(cardId)).ToPacket();
-        QueuePacketSend(packerCard);
+        var packetCard = JPacketConverter.Serialize(JPacketType.CardToPlayer, new JPacketCard(cardId,Id)).ToPacket();
+        QueuePacketSend(packetCard);
+    }
+    public void GiveCard(byte cardId,byte ToId)
+    {
+        var packetCard = JPacketConverter.Serialize(JPacketType.CardToPlayer, new JPacketCard(cardId, ToId)).ToPacket();
+        QueuePacketSend(packetCard);
+    }
+
+    public void SendTable(List<byte> cards)
+    {
+        var packetCard = JPacketConverter.Serialize(JPacketType.TableDeck, new JPacketDeck(cards)).ToPacket();
+        QueuePacketSend(packetCard);
+    }
+
+    public void SendHand(List<byte> cards)
+    {
+        var packetCard = JPacketConverter.Serialize(JPacketType.PlayerDeck, new JPacketDeck(cards)).ToPacket();
+        QueuePacketSend(packetCard);
     }
 
     public void StartTurn()

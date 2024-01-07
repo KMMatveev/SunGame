@@ -19,7 +19,7 @@ internal class JServer
     
     internal static Dictionary<byte, FoolCard> PlayCards = new();
 
-    private static Stack<byte> _cardsDeck = new();
+    public static Stack<byte> _cardsDeck = new();
     private static Stack<byte> reset = new();
     private static Stack<byte> _tableDeck = new();
 
@@ -69,6 +69,7 @@ internal class JServer
 
     public void AcceptClients()
     {
+        InitializeGame();
         while (true)
         {
             if (_stopListening)
@@ -88,7 +89,7 @@ internal class JServer
 
             Console.WriteLine($"[!] Accepted client from {(IPEndPoint)client.RemoteEndPoint!}");
 
-            var c = new ConnectedClient(client, (byte)ConnectedClients.Count);
+            var c = new ConnectedClient(client, (byte)ConnectedClients.Count, _cardsDeck.ToList());
 
             ConnectedClients.Add(c);
 
@@ -134,13 +135,14 @@ internal class JServer
         connectedClient.GiveCard(card);
     }
 
+
     public void StartGame()
     {
-        InitializeGame();
+        //InitializeGame();
 
         while (true)
         {
-            if (!ConnectedClients.All(x => x.IsReady))
+            if (!ConnectedClients.All(x => x.Connected))
             {
                 Thread.Sleep(1000);
                 continue;
@@ -155,18 +157,23 @@ internal class JServer
         //        client.GiveCard(_cardsDeck.Pop());
         //}
 
-        _activePlayerId = new Random().Next(0, 3);
+        _activePlayerId = 0;//new Random().Next(0, 3);
         int _playersInGame = 4;
         _isGameOver = false;
-        
 
+        //foreach (var player in ConnectedClients)
+        //{
+        //    player.UnknownCards = _cardsDeck.ToList();
+        //}
+
+        _tableDeck.Push(_cardsDeck.Pop());
+
+        foreach (var player in ConnectedClients)
+        {
+            player.GiveCard(_tableDeck.Peek(),12);
+        }
         while (!_isGameOver)
         {
-
-            foreach (var player in ConnectedClients)
-            {
-                player.UnknownCards = _cardsDeck.ToList();
-            }
 
             if (ConnectedClients.Count <= 3)
                 break;
@@ -174,7 +181,6 @@ internal class JServer
             var activePlayer = ConnectedClients[_activePlayerId % _playersInGame];
             
             Thread.Sleep(300);
-            _tableDeck.Push(_cardsDeck.Pop());
 
             activePlayer.StartTurn();
 
@@ -187,7 +193,7 @@ internal class JServer
                 }
                 if (activePlayer.Cards.Count==0 && _cardsDeck.Count!=0)
                 {
-                    SendCard(activePlayer);
+
                     continue;
                 }
                 else if(activePlayer.Cards.Count == 0 && _cardsDeck.Count == 0)
@@ -198,27 +204,41 @@ internal class JServer
                     ConnectedClients[_activePlayerId] = lastplayer;
                     _playersInGame--;
                     _activePlayerId--;
-                    break;
+
+                    activePlayer.IsReady = false;
+                    //activePlayer.Turn = false;
+                    //break;
                 }
                 if(_playersInGame==1)
                 {
                     Console.WriteLine($"Проиграл игрок {ConnectedClients[0].Name}");
                     _isGameOver=true;
-                    break;
-                }
 
-                if (activePlayer.Cards.Peek()/13==_tableDeck.Peek()/13|| activePlayer.Cards.Peek() % 13 == _tableDeck.Peek() % 13)
+                    //activePlayer.Turn = false;
+                    //break;
+                }
+                if (activePlayer.Cards.Peek() / 13 == _tableDeck.Peek() / 13)//(activePlayer.Cards.Peek()/13==_tableDeck.Peek()/13)//|| activePlayer.Cards.Peek() % 13 == _tableDeck.Peek() % 13)
                 {
                     var bufferDeck = _tableDeck;
                     var newCount=_tableDeck.Count;
                     _tableDeck.Clear();
                     _tableDeck.Push(activePlayer.Cards.Pop());
-                    foreach(var bufferCard in bufferDeck)
+                    foreach (var bufferCard in bufferDeck)
+                    { 
+                        activePlayer.GiveCard(bufferCard);
                         activePlayer.Cards.Push(bufferCard);
+                    }
+                    activePlayer.IsReady = false;
+                    //activePlayer.Turn = false;
+                    //break;
                 }
                 else
                 {
-                    _tableDeck.Push(activePlayer.Cards.Pop());
+                    _tableDeck.Push(activePlayer.Cards.Pop()); //_cardsDeck.Pop());//
+
+                    //activePlayer.Turn = false;
+
+                    activePlayer.IsReady = false;
                 }
                 //if (activePlayer.CardOnTable == 0) continue;
 
@@ -227,11 +247,30 @@ internal class JServer
                 //_activeNumber = card.Number;
 
                 //reset.Push(activePlayer.CardOnTable);
+
             } 
             while (activePlayer.Turn);
 
+            Console.WriteLine("Player Deck:");
+            foreach (var card in activePlayer.Cards)
+            {
+                Console.WriteLine(card);
+            }
+            Console.WriteLine("Table Deck:");
+            foreach (var card in _tableDeck)
+            {
+                Console.WriteLine(card);
+            }
             Console.WriteLine($"Player {activePlayer.Name} has finished his turn");
             _activePlayerId += 1;
+
+            foreach (var player in ConnectedClients)
+            {
+                player.CardsCount = (byte)_tableDeck.Count;
+                player.CardOnTable=_tableDeck.Peek();
+                //player.SendTable(_tableDeck.ToList());
+                //player.SendHand(player.Cards.ToList());
+            }
         }
 
         Console.WriteLine("Game over");

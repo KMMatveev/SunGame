@@ -4,7 +4,7 @@ public class GeneratorService
 {
     private readonly Random _random = new();
 
-    internal Stack<byte>  GenerateDecks()
+    public Stack<byte>  GenerateDecks()
     {
         var cards = new List<byte>();
         for (byte id = 0; id < 52; id++) 

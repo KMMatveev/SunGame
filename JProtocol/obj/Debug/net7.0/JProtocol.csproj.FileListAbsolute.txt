@@ -1,0 +1,13 @@
+C:\Users\Клим\source\repos\SunGame\JProtocol\bin\Debug\net7.0\JProtocol.deps.json
+C:\Users\Клим\source\repos\SunGame\JProtocol\bin\Debug\net7.0\JProtocol.dll
+C:\Users\Клим\source\repos\SunGame\JProtocol\bin\Debug\net7.0\JProtocol.pdb
+C:\Users\Клим\source\repos\SunGame\JProtocol\obj\Debug\net7.0\JProtocol.csproj.AssemblyReference.cache
+C:\Users\Клим\source\repos\SunGame\JProtocol\obj\Debug\net7.0\JProtocol.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Клим\source\repos\SunGame\JProtocol\obj\Debug\net7.0\JProtocol.AssemblyInfoInputs.cache
+C:\Users\Клим\source\repos\SunGame\JProtocol\obj\Debug\net7.0\JProtocol.AssemblyInfo.cs
+C:\Users\Клим\source\repos\SunGame\JProtocol\obj\Debug\net7.0\JProtocol.csproj.CoreCompileInputs.cache
+C:\Users\Клим\source\repos\SunGame\JProtocol\obj\Debug\net7.0\JProtocol.sourcelink.json
+C:\Users\Клим\source\repos\SunGame\JProtocol\obj\Debug\net7.0\JProtocol.dll
+C:\Users\Клим\source\repos\SunGame\JProtocol\obj\Debug\net7.0\refint\JProtocol.dll
+C:\Users\Клим\source\repos\SunGame\JProtocol\obj\Debug\net7.0\JProtocol.pdb
+C:\Users\Клим\source\repos\SunGame\JProtocol\obj\Debug\net7.0\ref\JProtocol.dll

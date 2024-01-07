@@ -101,21 +101,21 @@ public class JPacket
         var type = packet[3];
         var subtype = packet[4];
 
-        var xPacket = new JPacket { PacketType = type, PacketSubtype = subtype };
+        var jPacket = new JPacket { PacketType = type, PacketSubtype = subtype };
 
         var fields = packet.Skip(5).ToArray();
 
         while (true)
         {
             if (fields.Length == 2)
-                return xPacket;
+                return jPacket;
 
             var id = fields[0];
             var size = fields[1];
 
             var contents = size != 0 ? fields.Skip(2).Take(size).ToArray() : null;
 
-            xPacket.Fields.Add(new JPacketField
+            jPacket.Fields.Add(new JPacketField
             {
                 FieldId = id,
                 FieldSize = size,

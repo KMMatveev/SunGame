@@ -16,7 +16,7 @@ public static class CardsGenerator
         foreach (var suit in suits)
         {
             for (var i = 0; i < 13; i++)
-                playCards[id++] = new FoolCard(id, $"{suit}.{i}", (byte)i,suit);
+                playCards[id++] = new FoolCard(id, $"../../Assets/Cards/{suit}.{i}.png", (byte)i,suit);
         }
         
         return playCards;

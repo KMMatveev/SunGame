@@ -1,0 +1,12 @@
+C:\Users\Клим\Source\Repos\SunGame\SunGame_Models\bin\Debug\net7.0\SunGame_Models.deps.json
+C:\Users\Клим\source\repos\SunGame\SunGame_Models\bin\Debug\net7.0\SunGame_Models.dll
+C:\Users\Клим\source\repos\SunGame\SunGame_Models\bin\Debug\net7.0\SunGame_Models.pdb
+C:\Users\Клим\source\repos\SunGame\SunGame_Models\obj\Debug\net7.0\SunGame_Models.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Клим\source\repos\SunGame\SunGame_Models\obj\Debug\net7.0\SunGame_Models.AssemblyInfoInputs.cache
+C:\Users\Клим\source\repos\SunGame\SunGame_Models\obj\Debug\net7.0\SunGame_Models.AssemblyInfo.cs
+C:\Users\Клим\source\repos\SunGame\SunGame_Models\obj\Debug\net7.0\SunGame_Models.csproj.CoreCompileInputs.cache
+C:\Users\Клим\source\repos\SunGame\SunGame_Models\obj\Debug\net7.0\SunGame_Models.sourcelink.json
+C:\Users\Клим\source\repos\SunGame\SunGame_Models\obj\Debug\net7.0\SunGame_Models.dll
+C:\Users\Клим\source\repos\SunGame\SunGame_Models\obj\Debug\net7.0\refint\SunGame_Models.dll
+C:\Users\Клим\source\repos\SunGame\SunGame_Models\obj\Debug\net7.0\SunGame_Models.pdb
+C:\Users\Клим\Source\Repos\SunGame\SunGame_Models\obj\Debug\net7.0\ref\SunGame_Models.dll

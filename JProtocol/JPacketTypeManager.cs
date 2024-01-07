@@ -12,6 +12,9 @@ public static class JPacketTypeManager
         RegisterType(JPacketType.Turn, 3, 0);
         RegisterType(JPacketType.CardToTable, 4, 0);
         RegisterType(JPacketType.CardToPlayer, 4, 1);
+        RegisterType(JPacketType.TableDeck, 4, 2);
+        RegisterType(JPacketType.PlayerDeck, 4, 3);
+        RegisterType(JPacketType.CardsCount, 4, 4);//CardsCount,
         RegisterType(JPacketType.Win, 5, 0);
         RegisterType(JPacketType.Lose, 5, 1);
     }
