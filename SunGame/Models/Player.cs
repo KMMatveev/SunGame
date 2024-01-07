@@ -1,4 +1,10 @@
-﻿using System;
+﻿using JProtocol;
+using JProtocol.JPackets;
+using JProtocol.Serializer;
+using SunGame_Models;
+using SunGame_Models.Cards;
+using SunGame_Server.Services;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,11 +14,6 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using SunGame_Models;
-using SunGame_Models.Cards;
-using JProtocol;
-using JProtocol.JPackets;
-using JProtocol.Serializer;
 
 namespace SunGame.Models;
 
@@ -20,7 +21,7 @@ public sealed class Player : INotifyPropertyChanged
 {
     internal readonly Dictionary<byte, FoolCard> PlayCards = new();
 
-    private ObservableCollection<byte> _unknownCards = new() {(byte)13,(byte)1};
+    private ObservableCollection<byte> _unknownCards = new();
     public ObservableCollection<byte> UnknownCards
     {
         get => _unknownCards;
@@ -30,6 +31,18 @@ public sealed class Player : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
+    bool HasCards
+    {
+        get => _cards != null && _cards.Count > 0;
+    }
+
+    bool HasntCards
+    {
+        get => !(_cards != null && _cards.Count > 0);
+    }
+
+
 
     private Stack<byte> _cardsOnTable;
     public Stack<byte> CardsOnTable
@@ -42,16 +55,33 @@ public sealed class Player : INotifyPropertyChanged
         }
     }
 
+    private FoolCard _upperCard;
+    public FoolCard UpperCard
+    {
+        get => _upperCard;
+        set
+        {
+            _upperCard = value;
+            OnPropertyChanged();
+        }
+    }
+
     private Stack<byte> _cards;
 
     public Stack<byte> Cards
     {
         get => _cards;
-        private set
+        set
         {
             _cards = value;
+            UpperCard = PlayCards[_cards.Peek()];
             OnPropertyChanged();
         }
+    }
+
+    public int PlayerCardsCount
+    {
+        get => Cards.Count;
     }
 
     private byte _id;
@@ -86,6 +116,16 @@ public sealed class Player : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+    private bool _isReady;
+    public bool IsReady
+    {
+        get => _isReady;
+        set
+        {
+            _isReady = value;
+            OnPropertyChanged();
+        }
+    }
 
     private bool _turn;
 
@@ -98,7 +138,7 @@ public sealed class Player : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-    
+
     private bool _win;
 
     public bool Win
@@ -110,7 +150,7 @@ public sealed class Player : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-    
+
     private bool _lose;
 
     public bool Lose
@@ -123,14 +163,28 @@ public sealed class Player : INotifyPropertyChanged
         }
     }
 
-    private FoolCard _cardOnTable = null!;
+    private byte _cardOnTable;
 
-    public FoolCard CardOnTable
+    public byte CardOnTable
     {
         get => _cardOnTable;
         set
         {
             _cardOnTable = value;
+            UpperFoolCard = PlayCards[_cardOnTable];
+            OnPropertyChanged();
+        }
+    }
+    private FoolCard _upperFoolCard;
+    public FoolCard UpperFoolCard
+    {
+        get
+        {
+            return PlayCards[_cardOnTable];
+        }
+        set
+        {
+            _upperFoolCard = value;
             OnPropertyChanged();
         }
     }
@@ -150,11 +204,14 @@ public sealed class Player : INotifyPropertyChanged
 
     public Player()
     {
+        PlayCards = CardsGenerator.GeneratePlayCards();
         PlayersList = new ObservableCollection<Player> { new(0), new(1), new(2), new(3) };
         Name = "";
-        CardOnTable = new FoolCard();
-
-        PlayCards = CardsGenerator.GeneratePlayCards();
+        //CardOnTable=new FoolCard();
+        CardOnTable = (byte)0;
+        this._cards = new Stack<byte>();
+        var cards = new GeneratorService().GenerateDecks().ToList();
+        foreach (var card in cards) { UnknownCards.Add(card); }
     }
 
     private ObservableCollection<Player> _playersList = null!;
@@ -259,6 +316,12 @@ public sealed class Player : INotifyPropertyChanged
             case JPacketType.CardToPlayer:
                 ProcessGettingCard(packet);
                 break;
+            case JPacketType.TableDeck:
+                ProcessTableDeck(packet);
+                break;
+            case JPacketType.PlayerDeck:
+                ProcessPlayerDeck(packet);
+                break;
             case JPacketType.Turn:
                 ProcessStartingTurn(packet);
                 break;
@@ -274,7 +337,35 @@ public sealed class Player : INotifyPropertyChanged
                 throw new ArgumentException("Получен неизвестный пакет");
         }
     }
+    private void ProcessTableDeck(JPacket packet)
+    {
+        var packetCard = JPacketConverter.Deserialize<JPacketDeck>(packet);
+        //Cards.Push(PlayCards[packetCard.CardDeck].Id);
+        //CardsCount = (byte)Cards.Count;
+        //OnPropertyChanged(nameof(Cards));
+        _cardsOnTable.Clear();
+        foreach (var card in packetCard.CardDeck)
+        {
+            _cardsOnTable.Push(card);
+        }
+        _cardOnTable = _cardsOnTable.Peek(); //PlayCards[_cardsOnTable.Pop()];
+        //_cardsOnTable = packetCard.CardDeck;
+    }
+    private void ProcessPlayerDeck(JPacket packet)
+    {
+        var packetCard = JPacketConverter.Deserialize<JPacketDeck>(packet);
+        var player = packetCard.ToPlayerId;
+        if (Id == player)
+        {
+            _cards.Clear();
+            foreach (var card in packetCard.CardDeck)
+            {
+                _cards.Push(card);
+            }
+            _cardsCount = (byte)Cards.Count;
+        }
 
+    }
     private void ProcessLosing() => Lose = true;
 
     private void ProcessWinning() => Win = true;
@@ -284,9 +375,14 @@ public sealed class Player : INotifyPropertyChanged
     private void ProcessGettingCard(JPacket packet)
     {
         var packetCard = JPacketConverter.Deserialize<JPacketCard>(packet);
-        Cards.Push(PlayCards[packetCard.CardId].Id);
-        CardsCount = (byte)Cards.Count;
-        OnPropertyChanged(nameof(Cards));
+        var ind = UnknownCards.IndexOf(packetCard.CardId);
+        if (UnknownCards.Contains(packetCard.CardId)) ;
+        UnknownCards.Remove(packetCard.CardId);
+        _cardOnTable = packetCard.CardId;//PlayCards[packetCard.CardId];
+        if (packetCard.ToPlayerId == Id)
+            Cards.Push(PlayCards[packetCard.CardId].Id);
+        //CardsCount = (byte)Cards.Count;
+        //OnPropertyChanged(nameof(Cards));
     }
 
     private void ProcessGettingPlayers(JPacket packet)
@@ -299,7 +395,6 @@ public sealed class Player : INotifyPropertyChanged
             PlayersList[player.Id] = playersList[player.Id];
             OnPropertyChanged(nameof(PlayersList));
         }
-
         playersList[Id] = this;
         OnPropertyChanged(nameof(PlayersList));
     }
@@ -319,31 +414,31 @@ public sealed class Player : INotifyPropertyChanged
         switch (packetProperty.PropertyName!)
         {
             case "Id":
-            {
-                Id = (byte)Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!)!;
-                break;
-            }
-            case "CardOnTable":
-            {
-                var value = (byte)Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!)!;
-                CardOnTable = value == 0 ? new FoolCard() : PlayCards[value];
-                break;
-            }
-            default:
-            {
-                var property = GetType().GetProperty(packetProperty.PropertyName!);
-                property!.SetValue(PlayersList[packetProperty.PlayerId],
-                    Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!));
-                OnPropertyChanged(nameof(PlayersList));
-                if (packetProperty.PlayerId == Id)
                 {
-                    property.SetValue(this,
-                        Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!)!);
-                    OnPropertyChanged(property.Name);
+                    Id = (byte)Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!)!;
+                    break;
                 }
+            case "CardOnTable":
+                {
+                    var value = (byte)Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!)!;
+                    CardOnTable = value;//value == 0 ? new FoolCard() : PlayCards[value];
+                    break;
+                }
+            default:
+                {
+                    var property = GetType().GetProperty(packetProperty.PropertyName!);
+                    property!.SetValue(PlayersList[packetProperty.PlayerId],
+                        Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!));
+                    OnPropertyChanged(nameof(PlayersList));
+                    if (packetProperty.PlayerId == Id)
+                    {
+                        property.SetValue(this,
+                            Convert.ChangeType(packetProperty.PropertyValue, packetProperty.PropertyType!)!);
+                        OnPropertyChanged(property.Name);
+                    }
 
-                break;
-            }
+                    break;
+                }
         }
     }
 
@@ -381,9 +476,24 @@ public sealed class Player : INotifyPropertyChanged
 
     internal void TakeCard(byte id)
     {
-        UnknownCards.Remove(id);
-        var packet = JPacketConverter.Serialize(JPacketType.CardToPlayer, new JPacketEmpty()).ToPacket();
-        QueuePacketSend(packet);
-        Turn = false;
+        if (this.Turn && Cards.Count == 0)
+        {
+            UnknownCards.Remove(id);
+            var packet = JPacketConverter.Serialize(JPacketType.CardToTable, new JPacketCard(id, this.Id)).ToPacket();
+            QueuePacketSend(packet);
+            //_cards.Push(id);
+            IsReady = true;
+            Turn = false;
+        }
+        else if (this.Turn && Cards.Count > 0)
+        {
+            var card = Cards.Pop();
+            var packet = JPacketConverter.Serialize(JPacketType.CardToTable, new JPacketCard(card, this.Id)).ToPacket();
+            QueuePacketSend(packet);
+            IsReady = true;
+            Turn = false;
+            var packetTurn = JPacketConverter.Serialize(JPacketType.Turn, new JPacketEmpty()).ToPacket();
+            QueuePacketSend(packet);
+        }
     }
 }

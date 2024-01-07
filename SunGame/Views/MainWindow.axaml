@@ -126,140 +126,77 @@
 						<Grid.Background>
 							<ImageBrush Source="../../Assets/GameBackground.jpg" Stretch="Fill" />
 						</Grid.Background>
-                        <!--<Canvas Grid.Row="0" Grid.Column="0" Background="">
-                            <StackPanel Canvas.Right="10" Canvas.Top="0" Orientation="Horizontal">
-                                <TextBlock Text="Мой ход" Background="Red" FontSize="16" FontWeight="Bold"
+						
+						
+                        <Grid>
+                        <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300" />
+                        <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                        <RowDefinition Height="100" />
+                        <RowDefinition Height="600" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Стол -->
+                        <StackPanel Canvas.Left="10" Canvas.Top="0" Orientation="Horizontal">
+                                <TextBlock Text="Ваш ход" Background="Red" FontSize="16" FontWeight="Bold"
                                            Foreground="White" HorizontalAlignment="Center"
-                                           IsVisible="{Binding Player.PlayersList[0].Turn}" />
-                                <TextBlock Text="{Binding Player.PlayersList[0].Name}"
+                                           IsVisible="{Binding Player.Turn}" />
+                                <TextBlock Text="{Binding Player.Name}" IsVisible="{Binding Player.Turn}"
                                            Foreground="White" HorizontalAlignment="Center" />
                             </StackPanel>
-                        </Canvas>
+                        <Button Grid.Column="0" Grid.Row="1" IsVisible="True"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" IsEnabled="True">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Player.CardsCount}" />
+							<TextBlock Text="{Binding Player.UpperFoolCard.Name}" />
+                            <Image Source="{Binding Player.UpperFoolCard.Name}" Height="240" Width="120">  </Image>
+                        </StackPanel>
+                        </Button>
 
-                        <Canvas Grid.Row="0" Grid.Column="2" Background="">
-                            <StackPanel Canvas.Right="10" Canvas.Top="0" Orientation="Horizontal">
-                                <TextBlock Text="Мой ход" Background="Red" FontSize="16" FontWeight="Bold"
-                                           Foreground="White" HorizontalAlignment="Center"
-                                           IsVisible="{Binding Player.PlayersList[3].Turn}" />
-                                <TextBlock Text="{Binding Player.PlayersList[3].Name}"
-                                           Foreground="White" HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </Canvas>-->
-
-                        <Canvas Background="" x:Name="TableCanvas">
-							<Canvas Grid.Row="0">
-                            <TextBlock Text="Стол" Canvas.Left="2" Canvas.Top="2"
-                                       Margin="10,3,10,30" />
-                            <Button Canvas.Top="35" Canvas.Left="100" 
-									IsVisible="True" Click="TakeCardClick"
-									Command ="{Binding TakeCardClickCommand}"
-                                    HorizontalAlignment="Center" VerticalAlignment="Center" IsEnabled="True">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Player.CardOnTable.Name}" />
-									<Image Source="../../Assets/Cards/0.0.png"  ></Image>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
-                                        <TextBlock Text="{Binding Player.CardOnTable.Name}" />
-                                        <TextBlock Text="{Binding Player.CardOnTable.Number}" />
-                                    </StackPanel>
-                                </StackPanel>
-                            </Button>
-							</Canvas>
-						    <Canvas Grid.Row="1">
-								
-							<ListBox ItemsSource="{Binding Player.UnknownCards}"
-                         x:Name="UnknownListBox"
-                         HorizontalAlignment="Left"
-                         VerticalAlignment="Stretch"
-                         Background="Gray"
-                         MinHeight="45"
-                         Height="{Binding $parent[Grid].Height}">
-								
-							<ListBox.ItemTemplate>
+                        <!-- Список карт -->
+                        <ItemsControl Grid.Column="1" Grid.Row="1" ItemsSource="{Binding Player.UnknownCards}"
+                                        x:Name="UnknownListBox">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" Width="800" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                            <Button Canvas.Top="" Canvas.Left="" Margin="5,5,5,5"
-									IsVisible="True" Click="TakeCardClick"
-									Command ="{Binding  $parent[Grid].((viewModels:MainWindowViewModel)DataContext).TakeCardClickCommand}"
-									CommandParameter="{Binding $self}"
-                                    HorizontalAlignment="Center" VerticalAlignment="Center" IsEnabled="True">
-									<Image Source="../../Assets/Cards/shirt.png" Height="45" Width="15"  ></Image>
+                            <Button Margin="5,5,5,5"
+                                    IsVisible="True" Click="TakeCardClick"
+                                    Command ="{Binding $parent[Grid].((viewModels:MainWindowViewModel)DataContext).TakeCardClickCommand}"
+                                    CommandParameter="{Binding }"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center" IsEnabled="{Binding $parent[Grid].((viewModels:MainWindowViewModel)DataContext).Player.HasntCards}">
+                                <Image Source="../../Assets/Cards/shirt.png" Height="60" Width="30"></Image>
                             </Button>
                             </DataTemplate>
-                            </ListBox.ItemTemplate>
-							</ListBox>
-								
-                    
-							<!--<ListBox ItemsSource="{Binding Player.UnknownCards}"
-                         x:Name="UnknownsListBox"
-                         HorizontalAlignment="Left"
-                         VerticalAlignment="Stretch"
-                         Background=""
-                         MinHeight="45"
-                         Height="{Binding $parent[Grid].Height}">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Button Canvas.Top="" Canvas.Left="" Margin="5,5,5,5"
-									IsVisible="True" Click="TakeCardClick"
-									Command ="{Binding  $parent[Grid].((viewModels:MainWindowViewModel)DataContext).TakeCardClickCommand}"
-									CommandParameter="{Binding $self}"
-                                    HorizontalAlignment="Center" VerticalAlignment="Center" IsEnabled="True">
-									<Image Source="../../Assets/Cards/shirt.png" Height="45" Width="15"  ></Image>
-                            </Button>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>-->
-							</Canvas>
-                        </Canvas>
+                        </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        </Grid>
 
-                        <!--<Canvas Grid.Row="2" Grid.Column="2" Background="">
-                            <StackPanel Canvas.Right="10" Canvas.Top="0" Orientation="Horizontal">
-                                <TextBlock Text="Мой ход" Background="Red" FontSize="16" FontWeight="Bold"
-                                           Foreground="White" HorizontalAlignment="Center"
-                                           IsVisible="{Binding Player.PlayersList[1].Turn}" />
-                                <TextBlock Text="{Binding Player.PlayersList[1].Name}"
-                                           Foreground="White" HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </Canvas>
 
-                        <Canvas Grid.Row="2" Grid.Column="0" Background="">
-                            <StackPanel Canvas.Left="10" Canvas.Top="0" Orientation="Horizontal">
-                                <TextBlock Text="Мой ход" Background="Red" FontSize="16" FontWeight="Bold"
-                                           Foreground="White" HorizontalAlignment="Center"
-                                           IsVisible="{Binding Player.PlayersList[2].Turn}" />
-                                <TextBlock Text="{Binding Player.PlayersList[2].Name}"
-                                           Foreground="White" HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </Canvas>-->
+
                     </Grid>
                 </Grid>
             </Grid>
             <Grid Grid.Row="2" Background="Gray">
-                <ListBox ItemsSource="{Binding Player.Cards}" MinHeight="142" Background="">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.ItemTemplate>
-                        <!--<DataTemplate>
-                            <Button CommandParameter="{Binding Name}"
-                                    Command="{Binding $parent[Grid].((viewModels:MainWindowViewModel)DataContext).DropCardOnTableCommand}"
-                                    IsEnabled="{Binding $parent[Grid].((viewModels:MainWindowViewModel)DataContext).Player.Turn}">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Name}" />
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
-                                        <TextBlock Text="{Binding Name}" />
-                                        <TextBlock Text="{Binding Number}" />
-                                    </StackPanel>
-                                </StackPanel>
-                            </Button>
-                        </DataTemplate>-->
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <TextBlock Text="{Binding Player.PlayerCardsCount}" />
+                <Button CommandParameter="{Binding Player.UpperCard.Id}"
+                        Command="{Binding $parent[Grid].((viewModels:MainWindowViewModel)DataContext).TakeCardClickCommand}"
+                        IsVisible="{Binding $parent[Grid].((viewModels:MainWindowViewModel)DataContext).Player.HasCards}"
+                        IsEnabled="{Binding $parent[Grid].((viewModels:MainWindowViewModel)DataContext).Player.Turn}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Player.UpperCard.Name}" />
+                        <Image Source="{Binding Player.UpperCard.Name}" Height="90" Width="45">  </Image>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <!--<TextBlock Text="{Binding Name}" />
+                                    <TextBlock Text="{Binding Number}" />-->
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
             </Grid>
         </Grid>
         <Grid IsVisible="{Binding Player.Win}" Background="Black">

@@ -25,7 +25,7 @@ public partial class MainWindow : Window
     private void TakeCardClick(object? sender, RoutedEventArgs e)
     {
         MainMenuPage.IsVisible = false;
-        NickInput.IsVisible = true;
+        NickInput.IsVisible = false;
     }
 
     private void PlayerJoin_OnClick(object? sender, RoutedEventArgs e)
